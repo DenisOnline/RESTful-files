@@ -1,0 +1,5 @@
+org\example\model\FileDTO.class
+org\example\controller\FileRestController.class
+org\example\service\impl\FileServiceImpl.class
+org\example\Main.class
+org\example\service\FileService.class
