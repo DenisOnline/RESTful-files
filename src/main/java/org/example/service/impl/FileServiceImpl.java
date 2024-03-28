@@ -6,12 +6,13 @@ import org.example.service.FileService;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class FileServiceImpl implements FileService {
@@ -19,21 +20,20 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public List<FileDTO> list(String directory) {
-        List<FileDTO> fileList = new ArrayList<>();
         Path path = Paths.get(BASE_PATH, directory);
         if (!Files.exists(path) || !Files.isDirectory(path)) {
-            return fileList;
+            return Collections.emptyList();
         }
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
-            for (Path file : stream) {
+        try (Stream<Path> stream = Files.list(path)) {
+            return stream.map(file -> {
                 FileDTO fileDTO = new FileDTO();
                 fileDTO.setName(file.getFileName().toString());
-                fileList.add(fileDTO);
-            }
+                return fileDTO;
+            }).collect(Collectors.toList());
         } catch (IOException e) {
             e.printStackTrace();
+            return Collections.emptyList();
         }
-        return fileList;
     }
 
     @Override
