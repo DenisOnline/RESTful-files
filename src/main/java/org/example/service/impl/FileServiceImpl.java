@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 @Service
 public class FileServiceImpl implements FileService {
-    private final String BASE_PATH = "C:\\Users\\Шульженко Денис\\Desktop";
+    private final String BASE_PATH = "C:\\";
 
     @Override
     public List<FileDTO> list(String directory) {
