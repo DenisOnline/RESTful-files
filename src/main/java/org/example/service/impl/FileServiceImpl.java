@@ -5,8 +5,8 @@ import org.example.model.FileDTO;
 import org.example.service.FileService;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,18 +20,18 @@ public class FileServiceImpl implements FileService {
     @Override
     public List<FileDTO> list(String directory) {
         List<FileDTO> fileList = new ArrayList<>();
-        String path = BASE_PATH + "/" + directory;
-        File folder = new File(path);
-        if (!folder.exists() || !folder.isDirectory()) {
+        Path path = Paths.get(BASE_PATH, directory);
+        if (!Files.exists(path) || !Files.isDirectory(path)) {
             return fileList;
         }
-        File[] files = folder.listFiles();
-        if (files != null) {
-            for (File file : files) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+            for (Path file : stream) {
                 FileDTO fileDTO = new FileDTO();
-                fileDTO.setName(file.getName());
+                fileDTO.setName(file.getFileName().toString());
                 fileList.add(fileDTO);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return fileList;
     }
