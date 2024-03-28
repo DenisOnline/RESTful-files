@@ -1,17 +1,12 @@
 package org.example.service.impl;
 
+import io.micrometer.common.util.StringUtils;
 import org.example.model.FileDTO;
 import org.example.service.FileService;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,70 +37,83 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public ResponseEntity<Void> rename(String sourceName, String targetName) {
-        Path sourcePath = Paths.get(BASE_PATH, sourceName);
-        Path targetPath = Paths.get(BASE_PATH, targetName);
+    public boolean rename(String sourceName, String targetName) {
+        if (StringUtils.isEmpty(sourceName) || StringUtils.isEmpty(targetName)) {
+            return false;
+        }
 
         try {
+            Path sourcePath = Paths.get(BASE_PATH, sourceName);
+            Path targetPath = Paths.get(BASE_PATH, targetName);
             Files.move(sourcePath, targetPath);
-            return ResponseEntity.ok().build();
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return false;
         }
     }
 
     @Override
-    public ResponseEntity<Void> copy(String sourceName, String targetName) {
-        Path sourcePath = Paths.get(BASE_PATH, sourceName);
-        Path targetPath = Paths.get(BASE_PATH, targetName);
+    public boolean copy(String sourceName, String targetName) {
+        if (StringUtils.isEmpty(sourceName) || StringUtils.isEmpty(targetName)) {
+            return false;
+        }
 
         try {
+            Path sourcePath = Paths.get(BASE_PATH, sourceName);
+            Path targetPath = Paths.get(BASE_PATH, targetName);
             Files.copy(sourcePath, targetPath);
-            return ResponseEntity.ok().build();
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return false;
         }
     }
 
     @Override
-    public ResponseEntity<Void> delete(String filename) {
-        Path filePath = Paths.get(BASE_PATH, filename);
+    public boolean delete(String filename) {
+        if (StringUtils.isEmpty(filename)) {
+            return false;
+        }
 
         try {
+            Path filePath = Paths.get(BASE_PATH, filename);
             Files.delete(filePath);
-            return ResponseEntity.ok().build();
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return false;
         }
     }
 
     @Override
-    public ResponseEntity<byte[]> download(String filename) {
-        Path filePath = Paths.get(BASE_PATH, filename);
+    public byte[] download(String filename) {
+        if (filename == null || filename.isEmpty()) {
+            return null;
+        }
 
         try {
-            byte[] fileContent = Files.readAllBytes(filePath);
-            String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8);
-            HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedFilename + "\"");
-            return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
+            Path filePath = Paths.get(BASE_PATH, filename);
+            return Files.readAllBytes(filePath);
         } catch (IOException e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return null;
         }
     }
 
     @Override
-    public ResponseEntity<Void> upload(String filename, byte[] fileContent) {
-        try (FileOutputStream outputStream = new FileOutputStream(BASE_PATH + "/" + filename)) {
-            outputStream.write(fileContent);
-            return ResponseEntity.ok().build();
+    public boolean upload(String filename, byte[] fileContent) {
+        if (StringUtils.isEmpty(filename) || fileContent == null || fileContent.length == 0) {
+            return false;
+        }
+
+        try {
+            Path filePath = Paths.get(BASE_PATH, filename);
+            Files.write(filePath, fileContent);
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return false;
         }
     }
 }

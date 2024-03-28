@@ -1,7 +1,6 @@
 package org.example.controller;
 
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.example.model.FileDTO;
 import org.example.service.impl.FileServiceImpl;
 import org.springframework.http.HttpStatus;
@@ -28,28 +27,52 @@ public class FileRestController {
 
     @PutMapping("/rename")
     public ResponseEntity<Void> renameFile(@RequestParam("source") String sourceName, @RequestParam("target") String targetName) {
-        ResponseEntity<Void> response = fileService.rename(sourceName, targetName);
-        return ResponseEntity.status(response.getStatusCode()).build();
+        boolean result = fileService.rename(sourceName, targetName);
+        if (result) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PostMapping("/copy")
     public ResponseEntity<Void> copyFile(@RequestParam("source") String sourceName, @RequestParam("target") String targetName) {
-        return fileService.copy(sourceName, targetName);
+        boolean result = fileService.copy(sourceName, targetName);
+        if (result) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @DeleteMapping("/delete")
     public ResponseEntity<Void> deleteFile(@RequestParam("filename") String filename) {
-        return fileService.delete(filename);
+        boolean result = fileService.delete(filename);
+        if (result) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/download")
     public ResponseEntity<byte[]> downloadFile(@RequestParam("filename") String filename) {
-        return fileService.download(filename);
+        byte[] fileContent = fileService.download(filename);
+        if (fileContent != null) {
+            return ResponseEntity.ok().body(fileContent);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/upload")
     public ResponseEntity<Void> uploadFile(@RequestParam("filename") String filename, @RequestBody byte[] fileContent) {
-        return fileService.upload(filename, fileContent);
+        boolean result = fileService.upload(filename, fileContent);
+        if (result) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }
 
