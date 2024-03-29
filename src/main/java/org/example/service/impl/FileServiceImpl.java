@@ -3,6 +3,7 @@ package org.example.service.impl;
 import io.micrometer.common.util.StringUtils;
 import org.example.model.FileDTO;
 import org.example.service.FileService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -16,7 +17,8 @@ import java.util.stream.Stream;
 
 @Service
 public class FileServiceImpl implements FileService {
-    private final String BASE_PATH = "C:\\";
+    @Value("${dir.path}")
+    private String BASE_PATH;
 
     @Override
     public List<FileDTO> list(String directory) {
